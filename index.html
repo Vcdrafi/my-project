@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Number Verification</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
+</head>
+<body>
+    <div class="container">
+        <div class="circle-img">
+            <!-- সার্কেল ইমেজ -->
+            <img src="your-image-url.jpg" alt="Circle Image">
+        </div>
+        <h2>Phone Number Verification</h2>
+        <div class="input-container">
+            <input id="phone-number" type="tel" placeholder="Enter phone number" />
+            <div id="phone-error-message" class="error-message"></div>
+            <button id="submit-phone">Submit</button>
+        </div>
+        <div id="verification-modal" class="modal">
+            <div class="modal-content">
+                <span id="close-modal" class="close">&times;</span>
+                <h3>Enter Verification Code</h3>
+                <div class="code-inputs">
+                    <input type="text" maxlength="1">
+                    <input type="text" maxlength="1">
+                    <input type="text" maxlength="1">
+                    <input type="text" maxlength="1">
+                </div>
+                <div id="verification-error-message" class="error-message"></div>
+                <button id="verify-code">Verify</button>
+                <div id="timer"></div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
