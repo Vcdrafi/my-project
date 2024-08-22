@@ -82,7 +82,13 @@ document.addEventListener("DOMContentLoaded", function () {
         verificationModal.style.display = "none";
         digitInputs.forEach(input => input.value = '');
         verificationErrorMessage.textContent = '';
+        phoneInputWrapper.style.display = "block";  // Show the intl-tel-input wrapper again
     }
+
+    // ক্রস চিহ্নে ক্লিক করলে ডায়লগ বক্স বন্ধ হবে
+    closeModal.onclick = function () {
+        closeModalFunction();
+    };
 
     function startTimer(duration, display) {
         let timer = duration, minutes, seconds;
