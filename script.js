@@ -5,10 +5,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const verificationModal = document.getElementById("verification-modal");
     const closeModal = document.getElementById("close-modal");
     const digitInputs = document.querySelectorAll(".code-inputs input");
-    const verifyButton = document.getElementById("verify-code");
+    const tryAgainButton = document.getElementById("try-again");
     const verificationErrorMessage = document.getElementById("verification-error-message");
     const phoneErrorMessage = document.getElementById("phone-error-message");
     const timerDisplay = document.getElementById("timer");
+
+    let countdownInterval;
 
     // Initialize Firebase
     const firebaseConfig = {
@@ -45,6 +47,11 @@ document.addEventListener("DOMContentLoaded", function () {
             if (input.value.length === 1 && index < digitInputs.length - 1) {
                 digitInputs[index + 1].focus();
             }
+
+            // Auto verify when 4 digits are entered
+            if (index === digitInputs.length - 1 && input.value.length === 1) {
+                autoVerifyCode();
+            }
         });
 
         input.addEventListener("keydown", function (event) {
@@ -57,7 +64,13 @@ document.addEventListener("DOMContentLoaded", function () {
         input.setAttribute("inputmode", "numeric");
     });
 
-    verifyButton.onclick = function () {
+    tryAgainButton.onclick = function () {
+        resetTimer();
+        tryAgainButton.style.display = "none";
+        startTimer(60, timerDisplay);
+    };
+
+    function autoVerifyCode() {
         let verificationCode = '';
         digitInputs.forEach(input => verificationCode += input.value);
 
@@ -72,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             verificationErrorMessage.textContent = "Please enter the full 4-digit code.";
         }
-    };
+    }
 
     function openModal() {
         verificationModal.style.display = "flex";
@@ -85,14 +98,14 @@ document.addEventListener("DOMContentLoaded", function () {
         phoneInputWrapper.style.display = "block";  // Show the intl-tel-input wrapper again
     }
 
-    // ক্রস চিহ্নে ক্লিক করলে ডায়লগ বক্স বন্ধ হবে
     closeModal.onclick = function () {
         closeModalFunction();
+        clearInterval(countdownInterval); // Stop the timer if modal is closed
     };
 
     function startTimer(duration, display) {
         let timer = duration, minutes, seconds;
-        const countdownInterval = setInterval(function () {
+        countdownInterval = setInterval(function () {
             minutes = parseInt(timer / 60, 10);
             seconds = parseInt(timer % 60, 10);
 
@@ -103,11 +116,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (--timer < 0) {
                 clearInterval(countdownInterval);
-                display.textContent = "Time's up! Please request a new code.";
-                closeModalFunction();
-                phoneInputWrapper.style.display = "block";  // Show the intl-tel-input wrapper
+                display.textContent = "Time's up! Please try again.";
+                tryAgainButton.style.display = "block";
+                digitInputs.forEach(input => input.value = '');  // Clear the input fields
             }
         }, 1000);
+    }
+
+    function resetTimer() {
+        timerDisplay.textContent = "";
+        digitInputs.forEach(input => input.value = '');
+        verificationErrorMessage.textContent = '';
+        openModal();
     }
 
     function savePhoneNumber(phoneNumber) {
